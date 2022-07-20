@@ -25,10 +25,23 @@ struct message {
     long    receiverId; //receiver
 } message_buf;
 
+int oldStatus[3];
+int *status;
+key_t key_server, key1, key2, key3;
+int msqid_server, msqid1, msqid2, msqid3, shmid_server;
+string client[3] = {"Vinh", "Thu", "Nam"};
+
+int checkStatusChanged() {
+    for(int i=0; i<3; i++) {
+        if (oldStatus[i] != status[i]) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
 int main() {
     cout << "Server started" << endl;
-    key_t key_server, key1, key2, key3;
-    int msqid_server, msqid1, msqid2, msqid3, shmid_server;
 
     // ftok to generate unique key
     // key_server = ftok(SERVER_NAME, SERVER_ID);
@@ -49,16 +62,33 @@ int main() {
     msqid2 = msgget(key2, 0666 | IPC_CREAT);
     msqid3 = msgget(key3, 0666 | IPC_CREAT);
 
-    // // shmget returns an identifier in shmid
-    // shmid_server = shmget(key_server, 1024, 0666 | IPC_CREAT);
+    // shmget returns an identifier in shmid
+    shmid_server = shmget(key_server, 1024, 0666 | IPC_CREAT);
 
-    // // shmat to attach to shared memory
-    // char *str = (char*) shmat(shmid_server,(void*)0,0);
+    // shmat to attach to shared memory
+    status = (int*) shmat(shmid_server,(void*)0,0);
+
+    for(int i=0; i<3; i++) {
+        status[i] = 0;
+    }
+
+    for(int i=0; i<3; i++) {
+        cout << client[i] << ": " << ((status[i] == 0) ? "Offline" : "Online") << endl;
+        oldStatus[i] = status[i];
+    }
 
     while (1) {
         msgrcv(msqid_server, &message_buf, sizeof(message_buf), 0, 0);
         // cout << "\nReceived message: " << message_buf.content << endl;
         // cout << "\nReceived message: " << message_buf.imgId << endl;
+
+        if (checkStatusChanged()) {
+            cout << endl;
+            for (int i=0; i<3; i++) {
+                cout << client[i] << ": " << ((status[i] == 0) ? "Offline" : "Online") << endl;
+                oldStatus[i] = status[i];
+            }
+        }
 
         if (message_buf.receiverId == 1) {
             msgsnd(msqid1, &message_buf, sizeof(message_buf), 0);

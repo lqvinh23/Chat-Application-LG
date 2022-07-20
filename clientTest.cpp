@@ -30,8 +30,10 @@ struct message {
     long    receiverId; //receiver
 };
 
-int msqid_server, msqid1, shmid1;
+int msqid_server, msqid1, shmid1, shmid_server;
 message sbuf, rbuf;
+string client[3] = {"Vinh", "Thu", "Nam"};
+int *status;
 
 void sendMsg() {
     while (1) {
@@ -105,7 +107,7 @@ void receiveMsg() {
         if (rbuf.contentType == 2) {
             // shmat to attach to shared memory
             char *str = (char*) shmat(rbuf.imgId,(void*)0,0);
-            
+
             ifstream binary("bin_img_data.txt", ios::in | ios::app | ios::binary);
             ofstream image(rbuf.content, ios::out | ios::app);
 
@@ -147,10 +149,20 @@ int main() {
     msqid1 = msgget(key1, 0666 | IPC_CREAT );
 
     // shmget returns an identifier in shmid
+    shmid_server = shmget(key_server, 1024, 0666 | IPC_CREAT);
     shmid1 = shmget(key1, 1024, 0666 | IPC_CREAT);
+
+    // shmat to attach to shared memory
+    status = (int*) shmat(shmid_server,(void*)0,0);
 
     // printf("\nWelcome Vinh to the chat app. Enter 'end' to close the connection.");
     cout << "\nWelcome Vinh to the chat app. Enter 'end' to close the connection." << endl;
+
+    status[0] = 1;
+
+    for(int i=0; i<=sizeof(status)/sizeof(int); i++) {
+        cout << client[i] << ": " << ((status[i] == 0) ? "Offline" : "Online") << endl;
+    }
 
     thread t1(sendMsg);
     thread t2(receiveMsg);

@@ -23,7 +23,8 @@ struct message {
     int     contentType;
     int     imgId;
     long    receiverId; //receiver
-} message_buf;
+    string  statusInfo;
+} message_buf, status_buf;
 
 int oldStatus[3];
 int *status;
@@ -88,6 +89,18 @@ int main() {
                 cout << client[i] << ": " << ((status[i] == 0) ? "Offline" : "Online") << endl;
                 oldStatus[i] = status[i];
             }
+
+            // status_buf.mtype = SERVER_ID;
+            // status_buf.contentType = 1;
+            // for (int i=0; i<3; i++) {
+            //     status_buf.statusInfo += (client[i] + ": " + ((status[i] == 0) ? "Offline" : "Online") + "\n");
+            // }
+
+            // cout << status_buf.statusInfo << endl;
+
+            // msgsnd(msqid1, &status_buf, sizeof(status_buf), 0);
+            // msgsnd(msqid2, &status_buf, sizeof(status_buf), 0);
+            // msgsnd(msqid3, &status_buf, sizeof(status_buf), 0);
         }
 
         if (message_buf.receiverId == 1) {

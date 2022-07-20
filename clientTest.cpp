@@ -28,6 +28,7 @@ struct message {
     int     contentType;
     int     imgId;
     long    receiverId; //receiver
+    string  statusInfo;
 };
 
 int msqid_server, msqid1, shmid1, shmid_server;
@@ -94,14 +95,17 @@ void receiveMsg() {
 
         if (rbuf.contentType == 1) {
             if (rbuf.mtype == 2) {
-            cout << "\nFrom Thu: " << rbuf.content << endl;
-            cout << "Send to: ";
-            fflush(stdout);
+                cout << "\nFrom Thu: " << rbuf.content << endl;
+                cout << "Send to: ";
+                fflush(stdout);
             }
             if (rbuf.mtype == 3) {
-            cout << "\nFrom Nam: " << rbuf.content << endl;
-            cout << "Send to: ";
-            fflush(stdout);
+                cout << "\nFrom Nam: " << rbuf.content << endl;
+                cout << "Send to: ";
+                fflush(stdout);
+            }
+            if (rbuf.mtype == 10) {
+                cout << rbuf.statusInfo;
             }
         }
         if (rbuf.contentType == 2) {
